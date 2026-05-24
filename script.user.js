@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         浙工大正方导出 ICS 日程
 // @namespace    https://github.com/xlle-er/gdjwkcb_ical
-// @version      4.1.7
+// @version      4.1.8
 // @description  通过对正方教务系统的课表页面的解析，实现导出一个适用于大部分 ics 日历的文件
 // @author       Xiaolele_er & 1208nn (修改自 31415926535x )
 // @supportURL   https://github.com/xlle-er/gdjwkcb_ical/issues
@@ -487,7 +487,7 @@ class ICS {
               p--;
           return (r.push(l), r.join(CRLF));
         })
-        。join(CRLF) + CRLF));
+        .join(CRLF) + CRLF));
   }
 
   // 导出 ics 文件
