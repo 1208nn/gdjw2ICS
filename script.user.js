@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         浙工大正方导出 ICS 日程
 // @namespace    https://github.com/xlle-er/gdjwkcb_ical
-// @version      4.1.8
+// @version      4.1.9
 // @description  通过对正方教务系统的课表页面的解析，实现导出一个适用于大部分 ics 日历的文件
 // @author       Xiaolele_er & 1208nn (修改自 31415926535x )
 // @supportURL   https://github.com/xlle-er/gdjwkcb_ical/issues
@@ -37,7 +37,7 @@ var classTimeTable = {
 var classScheduleToICSURL = "kbcx/xskbcx_cxXskbcxIndex.html"; // 学生课表查询页面，将该学期的课程信息导出为 ics
 var examScheduleToICSURL = "kwgl/kscx_cxXsksxxIndex.html"; // 考试信息查询页面，将该学期的考试信息导出为 ics
 var studentEvaluationURL = "xspjgl/kcgcpj_cxKcgcpjxxIndex.html"; // 学生评教页面
-var courseLocationPrefix = "浙江工业大学 ";
+var LocationPrefix = "浙江工业大学 ";
 var startDelay = 4000; // 脚本实际开始运行的延迟时间，网络不好建议调大，1000 等于 1s
 
 //#endregion
@@ -212,14 +212,12 @@ function classScheduleToICS() {
             course.startWeek.push(startWeek);
             course.endWeek.push(endWeek);
           });
-        } else if (title == "上课地点") {
-          course.location = courseLocationPrefix + val;
-        } else if (title == "教师 ") {
-          // 注意教师后面有一个空格，可能是正方系统为了对齐做的格式调整，不能直接写 "教师"
+        } else if (title == "上课地点")
+          course.location = LocationPrefix + val;
+        else if (title == "教师 ")
           course.teacher = val;
-        } else if (title == "教学班名称") {
+        else if (title == "教学班名称")
           course.className = val;
-        }
       });
       courses.push(course);
     }
@@ -260,9 +258,9 @@ function classScheduleToICS() {
         );
         let e = new ICSEvent(
           getDate(course.startWeek[i], course.week) +
-            getTime(course.startTime, 0),
+          getTime(course.startTime, 0),
           getDate(course.startWeek[i], course.week) +
-            getTime(course.endTime, 1),
+          getTime(course.endTime, 1),
           course.name,
           course.location,
           `${course.teacher} ${classTime} ${course.className}`,
@@ -273,7 +271,7 @@ function classScheduleToICS() {
           (course.endWeek[i] -
             course.startWeek[i] +
             course.isSingleOrDouble[i]) /
-            course.isSingleOrDouble[i],
+          course.isSingleOrDouble[i],
           course.isSingleOrDouble[i],
           course.week.substr(0, 2).toUpperCase(),
         );
@@ -340,9 +338,9 @@ function examScheduleToICS() {
           else if (attr == "tabGrid_cdmc")
             exam.location = text; // 考试地点
           else if (attr == "tabGrid_cdxqmc")
-            exam.location += " " + text; // 校区
+            exam.campus += text; // 校区
           else if (attr == "tabGrid_zwh")
-            exam.location += "  座位号" + text; // 座位号
+            exam.seat += "座位号 " + text; // 座位号
           else if (attr == "tabGrid_kssj") {
             // 考试时间
             let date =
@@ -361,7 +359,8 @@ function examScheduleToICS() {
           ex.timeS,
           ex.timeE,
           ex.course + " " + ex.examName,
-          ex.location,
+          ex.campus + " " + ex.location,
+          ex.seat,
         ),
       );
     });
@@ -476,18 +475,18 @@ class ICS {
     const e = new TextEncoder();
     return (this.res =
       (this.ics.push("END:VCALENDAR"),
-      this.ics
-        .map((l) => {
-          for (
-            var r = [];
-            e.encode(l).length > 75;
-            r.push(l.slice(0, p)), l = SPACE + l.slice(p)
-          )
-            for (var p = l.length; p && e.encode(l.slice(0, p)).length > 75; )
-              p--;
-          return (r.push(l), r.join(CRLF));
-        })
-        .join(CRLF) + CRLF));
+        this.ics
+          .map((l) => {
+            for (
+              var r = [];
+              e.encode(l).length > 75;
+              r.push(l.slice(0, p)), l = SPACE + l.slice(p)
+            )
+              for (var p = l.length; p && e.encode(l.slice(0, p)).length > 75;)
+                p--;
+            return (r.push(l), r.join(CRLF));
+          })
+          .join(CRLF) + CRLF));
   }
 
   // 导出 ics 文件
